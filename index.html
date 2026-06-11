@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Civic Router: Internet for All</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0A0A1A;--gold:#F4A01C;--green:#00A86B;--blue:#1565C0;
+  --red:#C62828;--purple:#6A0DAD;--orange:#E65100;--teal:#00695C;
+  --panel:#FFF9F2;--halftone:radial-gradient(circle,rgba(0,0,0,0.07) 1px,transparent 1px);
+}
+body{background:#0A0A1A;font-family:'Comic Neue',cursive;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  background-image:radial-gradient(ellipse at top,#1a2a1a,#0A0A1A);}
+
+/* HEADER */
+.hdr{width:100%;padding:16px 20px;text-align:center;
+  background:linear-gradient(135deg,#1B5E20,#004D40,#0D47A1);
+  border-bottom:4px solid var(--gold);position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;inset:0;
+  background:var(--halftone);background-size:8px 8px;opacity:0.25;}
+.hdr h1{font-family:'Bangers',cursive;font-size:2.2rem;color:var(--gold);
+  letter-spacing:3px;text-shadow:3px 3px 0 var(--ink);position:relative;}
+.hdr p{font-size:0.82rem;color:#A5D6A7;margin-top:4px;position:relative;font-weight:700;}
+.hdr .tagline{font-family:'Bangers',cursive;font-size:1rem;color:#fff;
+  letter-spacing:1px;position:relative;margin-top:4px;}
+
+/* PROGRESS */
+.prog-wrap{width:100%;max-width:620px;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.prog-bar{flex:1;height:10px;background:#1a2a1a;border-radius:5px;border:2px solid rgba(255,255,255,0.1);overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:5px;transition:width 0.4s;}
+.prog-txt{font-family:'Bangers',cursive;font-size:1rem;color:var(--gold);white-space:nowrap;}
+
+/* BOOK */
+.comic-wrap{width:100%;max-width:620px;padding:12px 16px;flex:1;}
+.book{width:100%;perspective:1400px;}
+.page{display:none;width:100%;}
+.page.active{display:block;}
+.page-inner{position:relative;width:100%;transform-style:preserve-3d;transition:transform 0.7s cubic-bezier(0.77,0,0.175,1);}
+.page-inner.flipped{transform:rotateY(-180deg);}
+.page-front,.page-back{width:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:4px;border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,0.5);overflow:hidden;}
+.page-back{position:absolute;top:0;left:0;transform:rotateY(180deg);
+  background:linear-gradient(160deg,#1B3A1B,#0A1A0A);
+  display:flex;align-items:center;justify-content:center;min-height:400px;}
+
+/* COMIC PANELS */
+.comic-page{background:var(--panel);background-image:var(--halftone);background-size:6px 6px;}
+.panel-header{background:var(--ink);color:var(--gold);font-family:'Bangers',cursive;
+  font-size:1.2rem;letter-spacing:2px;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.panel{border-bottom:3px solid var(--ink);padding:12px 14px;position:relative;
+  min-height:80px;display:flex;flex-direction:column;gap:8px;}
+.panel:last-child{border-bottom:none;}
+.p-green{background:#E8F5E9;}  .p-blue{background:#E3F2FD;}
+.p-yellow{background:#FFFDE7;} .p-red{background:#FFEBEE;}
+.p-purple{background:#F3E5F5;}.p-teal{background:#E0F2F1;}
+.p-orange{background:#FFF3E0;}.p-dark{background:#1a1a2e;color:#fff;}
+.panel-dots{position:absolute;inset:0;background-image:var(--halftone);background-size:8px 8px;pointer-events:none;opacity:0.5;}
+
+/* CHARACTERS */
+.char-row{display:flex;align-items:flex-end;gap:10px;}
+.char{font-size:2.8rem;line-height:1;flex-shrink:0;}
+.char-sm{font-size:2rem;line-height:1;flex-shrink:0;}
+.char-name{font-size:0.68rem;font-weight:700;color:var(--ink);text-align:center;margin-top:2px;}
+
+/* BUBBLES */
+.bubble{background:#fff;border:2.5px solid var(--ink);border-radius:16px;
+  padding:7px 12px;font-size:0.86rem;font-weight:700;position:relative;
+  display:inline-block;max-width:92%;line-height:1.4;color:var(--ink);}
+.bubble.amina{background:#FFF9C4;border-color:#F57F17;}
+.bubble.tunde{background:#E1F5FE;border-color:var(--blue);}
+.bubble.grace{background:#FCE4EC;border-color:#C62828;}
+.bubble.byte{background:#E8F5E9;border-color:var(--green);}
+.bubble.monster{background:#FF8A80;border-color:#C62828;color:#fff;}
+.bubble.thought{border-style:dashed;}
+.bubble::after{content:'';position:absolute;bottom:-11px;left:14px;
+  border:5px solid transparent;border-top-color:var(--ink);}
+.bubble.right::after{left:auto;right:14px;}
+.bubble.top::after{display:none;}
+
+/* SFX */
+.sfx{font-family:'Bangers',cursive;font-size:26px;letter-spacing:3px;
+  text-align:center;padding:4px 0;}
+.sfx-gold{color:var(--gold);text-shadow:2px 2px 0 rgba(0,0,0,0.3);}
+.sfx-red{color:var(--red);text-shadow:2px 2px 0 rgba(0,0,0,0.2);}
+.sfx-green{color:var(--green);text-shadow:2px 2px 0 rgba(0,0,0,0.2);}
+
+/* NARRATOR */
+.narrator{background:var(--gold);border:2px solid var(--ink);border-radius:3px;
+  padding:5px 10px;font-size:11px;font-weight:700;font-style:italic;color:var(--ink);margin-top:auto;}
+.narrator.green{background:#A5D6A7;} .narrator.blue{background:#90CAF9;}
+.narrator.red{background:#EF9A9A;}   .narrator.white{background:#fff;}
+
+/* FEATURE GRID */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+.feat-card{background:#fff;border:2px solid var(--ink);border-radius:6px;padding:8px;text-align:center;}
+.feat-icon{font-size:1.5rem;} .feat-label{font-size:0.72rem;font-weight:700;color:var(--ink);margin-top:3px;}
+.feat-desc{font-size:0.64rem;color:#555;margin-top:2px;line-height:1.3;}
+
+/* BACK SIDE */
+.back-content{padding:26px 20px;text-align:center;width:100%;}
+.back-ch{font-family:'Bangers',cursive;font-size:1rem;color:var(--gold);letter-spacing:3px;margin-bottom:8px;}
+.back-title{font-family:'Bangers',cursive;font-size:1.7rem;color:#fff;margin-bottom:18px;letter-spacing:1px;line-height:1.2;}
+.back-msg{font-family:'Bangers',cursive;font-size:1.1rem;color:var(--gold);
+  background:rgba(244,160,28,0.1);border:2px solid var(--gold);border-radius:6px;
+  padding:8px 14px;margin-bottom:14px;}
+.back-points{display:flex;flex-direction:column;gap:10px;text-align:left;}
+.back-point{background:rgba(255,255,255,0.06);border-left:4px solid var(--gold);
+  padding:10px 14px;border-radius:0 8px 8px 0;font-size:0.86rem;color:#E8F5E9;line-height:1.5;}
+.back-point strong{color:var(--gold);}
+
+/* CONTROLS */
+.controls{display:flex;align-items:center;gap:8px;width:100%;max-width:620px;
+  padding:0 16px 16px;flex-wrap:wrap;justify-content:center;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
+  border:3px solid var(--ink);border-radius:4px;font-family:'Bangers',cursive;
+  font-size:1rem;letter-spacing:1px;cursor:pointer;transition:all 0.15s;
+  box-shadow:3px 3px 0 var(--ink);}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink);}
+.btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+.btn-prev{background:var(--blue);color:#fff;flex:1;min-width:90px;justify-content:center;}
+.btn-next{background:var(--green);color:#fff;flex:1;min-width:90px;justify-content:center;}
+.btn-flip{background:var(--gold);color:var(--ink);flex:1;min-width:90px;justify-content:center;}
+.btn-toc{background:var(--purple);color:#fff;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;
+  align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#0A1A0A;border:4px solid var(--gold);border-radius:8px;padding:22px 18px;
+  max-width:440px;width:100%;max-height:82vh;overflow-y:auto;}
+.modal h2{font-family:'Bangers',cursive;font-size:1.5rem;color:var(--gold);
+  text-align:center;letter-spacing:2px;margin-bottom:14px;}
+.toc-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;
+  cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);}
+.toc-item:hover{background:rgba(244,160,28,0.1);}
+.toc-num{width:28px;height:28px;background:var(--green);border:2px solid var(--ink);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-family:'Bangers',cursive;font-size:0.9rem;color:#fff;flex-shrink:0;}
+.toc-ch{font-size:0.7rem;color:var(--gold);font-weight:700;letter-spacing:1px;}
+.toc-sub{font-size:0.88rem;color:#E8F5E9;font-weight:600;}
+.modal-close{width:100%;margin-top:12px;background:var(--green);color:#fff;
+  border:3px solid var(--ink);border-radius:4px;padding:8px;cursor:pointer;
+  font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;}
+.hint{font-size:0.72rem;color:rgba(255,255,255,0.3);text-align:center;padding:0 16px 12px;}
+.footer{width:100%;text-align:center;padding:12px;font-size:0.72rem;
+  color:rgba(255,255,255,0.3);border-top:1px solid rgba(255,255,255,0.08);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">
+    <img src="data:image/jpeg;base64,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" alt="AFRALO ICANN At-Large" style="height:52px;width:auto;border-radius:4px;"/>
+    <div>
+      <h1 style="margin:0;">🌍 THE CIVIC ROUTER</h1>
+      <div class="tagline">Internet for All — A Community Story</div>
+      <p>Connecting Communities · Building Digital Democracy · Empowering Citizens</p>
+    </div>
+  </div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-bar"><div class="prog-fill" id="pFill" style="width:14.28%"></div></div>
+  <div class="prog-txt" id="pTxt">1 / 7</div>
+</div>
+
+<div class="comic-wrap"><div class="book" id="book">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 0 — COVER -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page active"><div class="page-inner">
+<div class="page-front"><div class="comic-page">
+  <div style="background:linear-gradient(160deg,#1B5E20,#004D40,#0D47A1);
+    padding:28px 20px;text-align:center;border-bottom:4px solid var(--gold);">
+    <div style="font-size:3.5rem;">🌍📡🏘️</div>
+    <div style="font-family:'Bangers',cursive;font-size:2.8rem;color:var(--gold);
+      letter-spacing:4px;text-shadow:4px 4px 0 rgba(0,0,0,0.5);margin-top:10px;">
+      THE CIVIC ROUTER
+    </div>
+    <div style="font-family:'Bangers',cursive;font-size:1.4rem;color:#A5D6A7;
+      letter-spacing:2px;margin-top:6px;">INTERNET FOR ALL</div>
+    <div style="font-size:0.88rem;color:#fff;margin-top:12px;line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto;">
+      A story of community, connectivity, digital rights, and the power of the internet when it reaches everyone.
+    </div>
+    <div style="margin-top:16px;display:flex;justify-content:center;gap:20px;">
+      <div style="text-align:center;"><div style="font-size:2rem;">👧🏾</div><div style="font-size:0.7rem;color:#A5D6A7;font-weight:700;">AMINA</div></div>
+      <div style="text-align:center;"><div style="font-size:2rem;">👦🏿</div><div style="font-size:0.7rem;color:#A5D6A7;font-weight:700;">TUNDE</div></div>
+      <div style="text-align:center;"><div style="font-size:2rem;">👩🏾‍🦳</div><div style="font-size:0.7rem;color:#A5D6A7;font-weight:700;">MAMA GRACE</div></div>
+      <div style="text-align:center;"><div style="font-size:2rem;">📡</div><div style="font-size:0.7rem;color:#A5D6A7;font-weight:700;">MR. BYTE</div></div>
+      <div style="text-align:center;"><div style="font-size:2rem;">👾</div><div style="font-size:0.7rem;color:#A5D6A7;font-weight:700;">DISCONNECT</div></div>
+    </div>
+  </div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+      <div style="background:#fff;border:2px solid var(--ink);border-radius:6px;padding:8px;text-align:center;">
+        <div style="font-size:1.4rem;">📡</div><div style="font-size:0.7rem;font-weight:700;">Community Networks</div>
+      </div>
+      <div style="background:#fff;border:2px solid var(--ink);border-radius:6px;padding:8px;text-align:center;">
+        <div style="font-size:1.4rem;">🏛️</div><div style="font-size:0.7rem;font-weight:700;">Digital Democracy</div>
+      </div>
+      <div style="background:#fff;border:2px solid var(--ink);border-radius:6px;padding:8px;text-align:center;">
+        <div style="font-size:1.4rem;">🛡️</div><div style="font-size:0.7rem;font-weight:700;">Cybersecurity</div>
+      </div>
+    </div>
+    <div class="narrator">Written by Gbemisola Esho · Google Developer Expert · WTM Ambassador · 2026</div>
+  </div>
+</div></div>
+<div class="page-back"><div class="back-content">
+  <div class="back-ch">THE CIVIC ROUTER</div>
+  <div class="back-title">About This Comic</div>
+  <div class="back-msg">🌍 Connectivity is a Human Right, Not a Privilege</div>
+  <div class="back-points">
+    <div class="back-point"><strong>The Civic Router</strong> tells the story of Amina, Tunde, Mama Grace, and their community — and how they fight the digital divide by building their own future.</div>
+    <div class="back-point"><strong>Characters:</strong> Amina (student), Tunde (innovator), Mama Grace (community leader), Mr. Byte (technology guide), and the Disconnect Monster (the digital divide).</div>
+    <div class="back-point"><strong>Six chapters</strong> covering: digital exclusion, community networks, cybersecurity, digital democracy, internet governance, and the vision of Internet for All.</div>
+    <div class="back-point"><strong>Inspired by</strong> real community network initiatives across Africa and the global internet governance community including ICANN, AFRALO, and civil society advocates.</div>
+  </div>
+</div></div>
+</div></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 1 — COMIC 1: THE VILLAGE WITHOUT INTERNET -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page"><div class="page-inner">
+<div class="page-front"><div class="comic-page">
+  <div class="panel-header"><span>🌑</span> COMIC 1: THE VILLAGE WITHOUT INTERNET</div>
+  <div class="panel p-yellow">
+    <div class="panel-dots"></div>
+    <div class="narrator">Kogi Village, Nigeria. 5:00am. Amina wakes before sunrise.</div>
+    <div class="char-row">
+      <div><div class="char">👧🏾</div><div class="char-name">AMINA</div></div>
+      <div class="bubble amina">I have to walk 8 kilometres again today just to get internet to submit my homework...</div>
+    </div>
+  </div>
+  <div class="panel p-red">
+    <div class="panel-dots"></div>
+    <div class="sfx sfx-red">ROAAARRR!! 👾</div>
+    <div class="char-row">
+      <div class="bubble monster">I AM THE DISCONNECT MONSTER! No internet for you! No education. No opportunity. No voice!</div>
+      <div><div class="char">👾</div><div class="char-name">DISCONNECT</div></div>
+    </div>
+    <div class="narrator red">The Disconnect Monster feeds on exclusion. Every community without internet makes it stronger.</div>
+  </div>
+  <div class="panel p-blue">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">🏪</div></div>
+      <div class="bubble right">My shop could reach customers across the country online. But without internet, I sell only to people who walk past.</div>
+    </div>
+    <div class="narrator blue">Mama Grace's business is trapped — not by lack of skill, but by lack of connection.</div>
+  </div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👦🏿</div><div class="char-name">TUNDE</div></div>
+      <div class="bubble tunde">This isn't right. Other places have internet. Why not us? There HAS to be something we can do.</div>
+    </div>
+    <div class="narrator green">💡 Connectivity is not a luxury. It is a necessity for education, health, business, and democracy.</div>
+  </div>
+</div></div>
+<div class="page-back"><div class="back-content">
+  <div class="back-ch">COMIC 1</div>
+  <div class="back-title">The Village Without Internet</div>
+  <div class="back-msg">🌑 MESSAGE: Connectivity is a necessity, not a luxury</div>
+  <div class="back-points">
+    <div class="back-point"><strong>The digital divide</strong> is the gap between those who have reliable internet access and those who do not. It affects education, health, economic opportunity, and democratic participation.</div>
+    <div class="back-point"><strong>Africa's challenge:</strong> Over 600 million Africans still lack internet access. Rural communities bear the heaviest burden — paying the highest prices for the least reliable connections.</div>
+    <div class="back-point"><strong>The Disconnect Monster</strong> represents every barrier to connectivity: high cost, poor infrastructure, lack of local content, digital illiteracy, and exclusionary policies.</div>
+    <div class="back-point"><strong>Key fact:</strong> A student without internet access is not just inconvenienced — they are systematically excluded from 21st century education, opportunity, and participation.</div>
+  </div>
+</div></div>
+</div></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 2 — COMIC 2: MEET THE CIVIC ROUTER -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page"><div class="page-inner">
+<div class="page-front"><div class="comic-page">
+  <div class="panel-header"><span>📡</span> COMIC 2: MEET THE CIVIC ROUTER</div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div class="sfx sfx-gold">⚡ ZZZAP! ⚡</div>
+    <div class="narrator green">A glowing signal appears in the village square. A friendly figure materialises from the light...</div>
+    <div class="char-row">
+      <div><div class="char">📡</div><div class="char-name">MR. BYTE</div></div>
+      <div class="bubble byte">Hello everyone! I'm Mr. Byte — your guide to the internet and what it can do for your community!</div>
+    </div>
+  </div>
+  <div class="panel p-yellow">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👧🏾</div><div class="char-name">AMINA</div></div>
+      <div class="bubble amina">Are you a router? Like the ones that give WiFi?</div>
+    </div>
+    <div class="char-row" style="justify-content:flex-end;">
+      <div class="bubble byte right">Much more! I'm a CIVIC router — I route not just data but knowledge, rights, and community power!</div>
+      <div><div class="char">📡</div></div>
+    </div>
+  </div>
+  <div class="panel p-blue">
+    <div class="panel-dots"></div>
+    <div class="narrator">Mr. Byte explains what communities CAN do:</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon">🏘️</div><div class="feat-label">Community Networks</div><div class="feat-desc">Build and own your own local internet infrastructure</div></div>
+      <div class="feat-card"><div class="feat-icon">🌐</div><div class="feat-label">Internet Governance</div><div class="feat-desc">Have a voice in how the internet is managed globally</div></div>
+      <div class="feat-card"><div class="feat-icon">📚</div><div class="feat-label">Digital Inclusion</div><div class="feat-desc">Ensure no one is left behind in the digital world</div></div>
+      <div class="feat-card"><div class="feat-icon">💪</div><div class="feat-label">Digital Rights</div><div class="feat-desc">Privacy, freedom of expression, and access for all</div></div>
+    </div>
+  </div>
+  <div class="panel p-purple">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👦🏿</div><div class="char-name">TUNDE</div></div>
+      <div class="bubble tunde">Communities can solve connectivity challenges? WE can build this ourselves?</div>
+    </div>
+    <div class="char-row" style="justify-content:flex-end;">
+      <div class="bubble byte right">Yes! Around the world, communities like yours have done exactly that!</div>
+      <div><div class="char">📡</div></div>
+    </div>
+  </div>
+</div></div>
+<div class="page-back"><div class="back-content">
+  <div class="back-ch">COMIC 2</div>
+  <div class="back-title">Meet the Civic Router</div>
+  <div class="back-msg">📡 MESSAGE: Communities can solve connectivity challenges</div>
+  <div class="back-points">
+    <div class="back-point"><strong>Community Networks</strong> are internet infrastructure built, owned, and operated by local communities. Examples: Rhizomatica (Mexico), Zenzeleni Networks (South Africa), Tunapanda (Kenya).</div>
+    <div class="back-point"><strong>Internet Governance</strong> is the system of policies, norms, and institutions that shape how the internet is managed. Bodies include ICANN, ITU, IGF, and regional organisations like AFRALO.</div>
+    <div class="back-point"><strong>Digital Inclusion</strong> means ensuring that everyone — regardless of location, income, gender, age, or disability — can access and benefit from the internet.</div>
+    <div class="back-point"><strong>Digital Rights</strong> include the right to access information, freedom of expression online, privacy, and the right to participate in digital governance decisions.</div>
+  </div>
+</div></div>
+</div></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 3 — COMIC 3: BUILDING A COMMUNITY NETWORK -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page"><div class="page-inner">
+<div class="page-front"><div class="comic-page">
+  <div class="panel-header"><span>🏗️</span> COMIC 3: BUILDING A COMMUNITY NETWORK</div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div class="narrator green">The community gathers under the old mango tree. Mr. Byte projects a plan in the air...</div>
+    <div class="char-row">
+      <div><div class="char">👩🏾‍🦳</div><div class="char-name">MAMA GRACE</div></div>
+      <div class="bubble grace">If we build this ourselves, WE own it. WE control it. No corporation can shut us off or overcharge us!</div>
+    </div>
+  </div>
+  <div class="panel p-yellow">
+    <div class="panel-dots"></div>
+    <div class="narrator">Step by step, the community gets to work:</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+      <div style="display:flex;gap:8px;align-items:flex-start;background:#fff;border:2px solid var(--ink);border-radius:6px;padding:7px;">
+        <span style="font-size:1.2rem;">1️⃣</span><div><strong style="font-size:0.82rem;">Plan Together</strong><div style="font-size:0.74rem;margin-top:2px;">Community mapping — where does internet need to reach? School, clinic, market, homes.</div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-start;background:#fff;border:2px solid var(--ink);border-radius:6px;padding:7px;">
+        <span style="font-size:1.2rem;">2️⃣</span><div><strong style="font-size:0.82rem;">Build Infrastructure</strong><div style="font-size:0.74rem;margin-top:2px;">Towers, antennas, cables — local hands building local solutions with local materials.</div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-start;background:#fff;border:2px solid var(--ink);border-radius:6px;padding:7px;">
+        <span style="font-size:1.2rem;">3️⃣</span><div><strong style="font-size:0.82rem;">Learn Digital Skills</strong><div style="font-size:0.74rem;margin-top:2px;">Training community members to maintain, repair, and grow the network themselves.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel p-teal">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👧🏾</div><div class="char-name">AMINA</div></div>
+      <div class="bubble amina">I learned to configure a router today! If this network grows, maybe I'll be the one maintaining it!</div>
+    </div>
+    <div class="char-row" style="justify-content:flex-end;">
+      <div class="bubble tunde right">And I'm writing software to track the network health. This is OUR technology now!</div>
+      <div><div class="char">👦🏿</div><div class="char-name">TUNDE</div></div>
+    </div>
+  </div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div class="sfx sfx-green">✨ CONNECTED! ✨</div>
+    <div class="narrator green">💪 LOCAL OWNERSHIP creates sustainable solutions. When communities own their infrastructure, they control their digital future.</div>
+  </div>
+</div></div>
+<div class="page-back"><div class="back-content">
+  <div class="back-ch">COMIC 3</div>
+  <div class="back-title">Building a Community Network</div>
+  <div class="back-msg">🏗️ MESSAGE: Local ownership creates sustainable solutions</div>
+  <div class="back-points">
+    <div class="back-point"><strong>Community network model:</strong> Unlike commercial ISPs, community networks prioritise accessibility over profit. They are governed by the communities they serve, with pricing set to be affordable for local income levels.</div>
+    <div class="back-point"><strong>Real-world examples:</strong> Zenzeleni Networks (Eastern Cape, South Africa) provides internet at 90% lower cost than commercial providers. Rhizomatica (Oaxaca, Mexico) connected 60+ indigenous communities using locally operated infrastructure.</div>
+    <div class="back-point"><strong>Digital skills transfer:</strong> Community networks succeed when they train local technicians — creating employment, building capacity, and ensuring the network can be maintained without external dependency.</div>
+    <div class="back-point"><strong>Policy support needed:</strong> Community networks need supportive spectrum policies, simplified licensing frameworks, and government investment in backhaul connectivity to reach the communities commercial operators ignore.</div>
+  </div>
+</div></div>
+</div></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 4 — COMIC 4: INTERNET FOR ALL -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page"><div class="page-inner">
+<div class="page-front"><div class="comic-page">
+  <div class="panel-header"><span>🌟</span> COMIC 4: INTERNET FOR ALL</div>
+  <div class="panel p-blue">
+    <div class="panel-dots"></div>
+    <div class="narrator blue">Three months later. Kogi Village is transformed...</div>
+    <div class="char-row">
+      <div><div class="char">👧🏾</div><div class="char-name">AMINA</div></div>
+      <div class="bubble amina">I submitted my application to university this morning! From HOME! No more 8-kilometre walk!</div>
+    </div>
+  </div>
+  <div class="panel p-yellow">
+    <div class="panel-dots"></div>
+    <div class="narrator">What connectivity unlocked for every community member:</div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon">🎓</div><div class="feat-label">Education</div><div class="feat-desc">Online classes, libraries, research — equal access to knowledge</div></div>
+      <div class="feat-card"><div class="feat-icon">🏥</div><div class="feat-label">Healthcare</div><div class="feat-desc">Telemedicine, health information, emergency services</div></div>
+      <div class="feat-card"><div class="feat-icon">💼</div><div class="feat-label">Jobs & Business</div><div class="feat-desc">Remote work, e-commerce, markets beyond the village</div></div>
+      <div class="feat-card"><div class="feat-icon">🏛️</div><div class="feat-label">Government Services</div><div class="feat-desc">Tax, ID, benefits, licensing — no travel required</div></div>
+    </div>
+  </div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👩🏾‍🦳</div><div class="char-name">MAMA GRACE</div></div>
+      <div class="bubble grace">My shop now sells to customers in Lagos, Abuja, and London! My revenue tripled in one month!</div>
+    </div>
+  </div>
+  <div class="panel p-red">
+    <div class="panel-dots"></div>
+    <div class="sfx sfx-red">👾 NOOOO!!!</div>
+    <div class="char-row">
+      <div class="bubble monster">The Disconnect Monster shrinks... Every connected community weakens my power!</div>
+      <div><div class="char">👾</div></div>
+    </div>
+    <div class="narrator red">🌟 MESSAGE: Connectivity creates opportunity — for education, health, livelihoods, and participation.</div>
+  </div>
+</div></div>
+<div class="page-back"><div class="back-content">
+  <div class="back-ch">COMIC 4</div>
+  <div class="back-title">Internet for All</div>
+  <div class="back-msg">🌟 MESSAGE: Connectivity creates opportunity</div>
+  <div class="back-points">
+    <div class="back-point"><strong>Education impact:</strong> Students with reliable internet access have access to 4.66 billion web pages of knowledge, 50 million+ online courses, and real-time global collaboration — fundamentally changing what is possible.</div>
+    <div class="back-point"><strong>Healthcare transformation:</strong> Telemedicine brings specialist care to rural communities without requiring patients to travel. Digital health information saves lives through early warning, prevention, and informed decisions.</div>
+    <div class="back-point"><strong>Economic empowerment:</strong> A connected artisan, farmer, or small business owner can access global markets, digital payments, supply chains, and financial services that were previously unavailable.</div>
+    <div class="back-point"><strong>Government services:</strong> Digital government reduces corruption (transparent processes), reduces cost (no intermediaries), and increases access (no travel to distant offices) — especially for marginalised communities.</div>
+  </div>
+</div></div>
+</div></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 5 — COMIC 5: CYBERSECURITY MATTERS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page"><div class="page-inner">
+<div class="page-front"><div class="comic-page">
+  <div class="panel-header"><span>🛡️</span> COMIC 5: CYBERSECURITY MATTERS</div>
+  <div class="panel p-yellow">
+    <div class="panel-dots"></div>
+    <div class="narrator">A week after connection. Amina gets an unexpected message...</div>
+    <div style="border:2px solid var(--red);border-radius:6px;background:#FFEBEE;padding:8px;font-size:0.8rem;margin-top:4px;">
+      <div style="color:var(--red);font-weight:700;">📱 SMS: URGENT — Your bank account has been suspended!</div>
+      <div style="margin-top:4px;">Click here to verify: → bit.ly/bank-ng-verify-now</div>
+      <div style="margin-top:4px;font-size:0.72rem;color:#888;">From: +234-800-FAKE-BANK</div>
+    </div>
+  </div>
+  <div class="panel p-red">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👧🏾</div><div class="char-name">AMINA</div></div>
+      <div class="bubble amina">My account! I need to click this NOW before I lose everything!</div>
+    </div>
+    <div class="char-row" style="justify-content:flex-end;">
+      <div class="bubble byte right">STOP, Amina! This is PHISHING. They're trying to steal your details by creating panic!</div>
+      <div><div class="char">📡</div><div class="char-name">MR. BYTE</div></div>
+    </div>
+  </div>
+  <div class="panel p-blue">
+    <div class="panel-dots"></div>
+    <div class="narrator blue">Mr. Byte teaches the community the three online threats:</div>
+    <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:0.8rem;">
+      <div style="background:#FFEBEE;border:2px solid var(--red);border-radius:4px;padding:7px;">
+        <strong>🎣 Phishing:</strong> Fake messages pretending to be banks, government, or trusted services to steal your information or money.
+      </div>
+      <div style="background:#FFF3E0;border:2px solid var(--orange);border-radius:4px;padding:7px;">
+        <strong>💸 Online Scams:</strong> "You've won a prize!" "Send money to receive more money!" Promises that are too good to be true — because they are.
+      </div>
+      <div style="background:#FCE4EC;border:2px solid var(--purple);border-radius:4px;padding:7px;">
+        <strong>📰 Misinformation:</strong> False news, fake health advice, and manipulated photos shared to deceive, divide, or manipulate communities.
+      </div>
+    </div>
+  </div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👩🏾‍🦳</div><div class="char-name">MAMA GRACE</div></div>
+      <div class="bubble grace">So we need internet safety training as much as we need the connection itself!</div>
+    </div>
+    <div class="narrator green">🛡️ SAFE CONNECTIVITY matters. Internet access without digital literacy creates new vulnerabilities.</div>
+  </div>
+</div></div>
+<div class="page-back"><div class="back-content">
+  <div class="back-ch">COMIC 5</div>
+  <div class="back-title">Cybersecurity Matters</div>
+  <div class="back-msg">🛡️ MESSAGE: Safe connectivity matters</div>
+  <div class="back-points">
+    <div class="back-point"><strong>Phishing in Africa:</strong> First-time internet users are disproportionately targeted because they lack experience recognising digital threats. Mobile money fraud, bank impersonation, and government impersonation are the most common vectors.</div>
+    <div class="back-point"><strong>Online scams:</strong> "Advance fee" scams, romance scams, fake job offers, and prize notifications cost African internet users billions annually. Community digital literacy programmes are the most effective defence.</div>
+    <div class="back-point"><strong>Misinformation:</strong> False health information (fake COVID cures, vaccine misinformation), electoral disinformation, and communal violence incitement through false news have caused real harm in connected communities.</div>
+    <div class="back-point"><strong>The solution:</strong> Digital literacy must be taught alongside connectivity. Every community network should include training in online safety, critical thinking about online content, and how to report and respond to digital threats.</div>
+  </div>
+</div></div>
+</div></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 6 — COMIC 6: DIGITAL DEMOCRACY -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page"><div class="page-inner">
+<div class="page-front"><div class="comic-page">
+  <div class="panel-header"><span>🏛️</span> COMIC 6: DIGITAL DEMOCRACY</div>
+  <div class="panel p-blue">
+    <div class="panel-dots"></div>
+    <div class="narrator blue">One month later. The community discovers something powerful beyond just having internet...</div>
+    <div class="char-row">
+      <div><div class="char">👦🏿</div><div class="char-name">TUNDE</div></div>
+      <div class="bubble tunde">Mr. Byte — I found the government's budget document online. Did you know only 2% was allocated to our region?</div>
+    </div>
+    <div class="char-row" style="justify-content:flex-end;">
+      <div class="bubble byte right">Now you know! And knowledge is the first step to accountability.</div>
+      <div><div class="char">📡</div></div>
+    </div>
+  </div>
+  <div class="panel p-green">
+    <div class="panel-dots"></div>
+    <div class="narrator green">The community discovers what connected citizens can do:</div>
+    <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:0.8rem;font-weight:700;">
+      <div style="background:#fff;border:2px solid var(--green);border-radius:4px;padding:7px;">
+        📋 <strong>Access Public Information</strong> — FOI requests, budget documents, government contracts, policy decisions
+      </div>
+      <div style="background:#fff;border:2px solid var(--blue);border-radius:4px;padding:7px;">
+        🗳️ <strong>Participate in Decisions</strong> — Online consultations, e-petitions, public comment processes, community feedback platforms
+      </div>
+      <div style="background:#fff;border:2px solid var(--purple);border-radius:4px;padding:7px;">
+        🔍 <strong>Hold Leaders Accountable</strong> — Track promises, report corruption, organise with other citizens, amplify community voices
+      </div>
+    </div>
+  </div>
+  <div class="panel p-yellow">
+    <div class="panel-dots"></div>
+    <div class="char-row">
+      <div><div class="char">👩🏾‍🦳</div><div class="char-name">MAMA GRACE</div></div>
+      <div class="bubble grace">We submitted a community petition online last week. The government responded within 48 hours. That NEVER happened before we had internet!</div>
+    </div>
+  </div>
+  <div class="panel" style="background:linear-gradient(135deg,#1B5E20,#004D40);color:#fff;text-align:center;padding:16px;">
+    <div class="panel-dots"></div>
+    <div style="font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;color:var(--gold);">
+      CONNECTED CITIZENS STRENGTHEN DEMOCRACY
+    </div>
+    <div style="font-size:0.82rem;margin-top:8px;color:#A5D6A7;line-height:1.6;">
+      When every community has internet access, every voice can be heard. Democracy becomes truly participatory — not just for the connected few, but for all.
+    </div>
+    <div style="margin-top:10px;font-family:'Bangers',cursive;font-size:1rem;color:var(--gold);">
+      🌍 THE CIVIC ROUTER: INTERNET FOR ALL 🌍
+    </div>
+    <div style="font-size:0.72rem;color:#80CBC4;margin-top:6px;">Written by Gbemisola Esho · 2026 · AFRALO / ICANN At-Large</div>
+  </div>
+</div></div>
+<div class="page-back"><div class="back-content">
+  <div class="back-ch">COMIC 6</div>
+  <div class="back-title">Digital Democracy</div>
+  <div class="back-msg">🏛️ MESSAGE: Connected citizens strengthen democracy</div>
+  <div class="back-points">
+    <div class="back-point"><strong>Freedom of Information:</strong> Internet access enables citizens to access government documents, budget data, policy decisions, and public records that were previously inaccessible — especially in rural areas far from government offices.</div>
+    <div class="back-point"><strong>Digital participation:</strong> Online public consultations, e-petitions, community feedback platforms, and social media advocacy give communities a voice in decisions that affect them — regardless of their distance from power.</div>
+    <div class="back-point"><strong>Accountability:</strong> Connected communities can track government promises, document corruption, organise collective action, and amplify local issues to national and international attention in ways that were impossible before.</div>
+    <div class="back-point"><strong>Internet Governance:</strong> Forums like ICANN's At-Large community, the IGF, and regional bodies like AFRALO exist specifically to ensure that the communities most affected by internet policy have a voice in shaping it. Every connected citizen is a potential internet governance participant.</div>
+  </div>
+</div></div>
+</div></div>
+
+</div></div><!-- /book /comic-wrap -->
+
+<div class="controls">
+  <button class="btn btn-prev" id="btnPrev" onclick="nav(-1)" disabled>◀ PREV</button>
+  <button class="btn btn-flip" onclick="flip()">🔄 FLIP</button>
+  <button class="btn btn-toc" onclick="openTOC()">📋</button>
+  <button class="btn btn-next" id="btnNext" onclick="nav(1)">NEXT ▶</button>
+</div>
+<p class="hint">Flip to see key lessons · Arrow keys or swipe · Space to flip</p>
+
+<div class="modal-overlay" id="tocModal" onclick="closeTOC(event)">
+  <div class="modal">
+    <h2>📋 CONTENTS</h2>
+    <div id="tocList"></div>
+    <button class="modal-close" onclick="closeTOC()">CLOSE</button>
+  </div>
+</div>
+
+<div class="footer">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
+    <img src="data:image/jpeg;base64,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" alt="AFRALO" style="height:26px;width:auto;"/>
+    <span>The Civic Router: Internet for All · By Gbemisola Esho · 2026 · AFRALO / ICANN At-Large</span>
+  </div>
+</div>
+
+<script>
+const CH=[
+  {n:"Cover",      t:"The Civic Router: Internet for All"},
+  {n:"Comic 1",    t:"The Village Without Internet"},
+  {n:"Comic 2",    t:"Meet the Civic Router"},
+  {n:"Comic 3",    t:"Building a Community Network"},
+  {n:"Comic 4",    t:"Internet for All"},
+  {n:"Comic 5",    t:"Cybersecurity Matters"},
+  {n:"Comic 6",    t:"Digital Democracy"},
+];
+let cur=0; window.currentPage=0; const tot=7;
+const allP=document.querySelectorAll('.page');
+function ui(){
+  window.currentPage=cur;
+  allP.forEach((p,i)=>p.classList.toggle('active',i===cur));
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').disabled=cur===tot-1;
+  document.getElementById('pFill').style.width=((cur+1)/tot*100)+'%';
+  document.getElementById('pTxt').textContent=(cur+1)+' / '+tot;
+  const inn=allP[cur].querySelector('.page-inner');
+  if(inn)inn.classList.remove('flipped');
+}
+function nav(d){const n=cur+d;if(n>=0&&n<tot){cur=n;ui();}}
+function flip(){const inn=allP[cur].querySelector('.page-inner');if(inn)inn.classList.toggle('flipped');}
+function openTOC(){
+  document.getElementById('tocList').innerHTML=CH.map((c,i)=>`
+    <div class="toc-item" onclick="goto(${i})">
+      <div class="toc-num">${i+1}</div>
+      <div><div class="toc-ch">${c.n}</div><div class="toc-sub">${c.t}</div></div>
+    </div>`).join('');
+  document.getElementById('tocModal').classList.add('open');
+}
+function closeTOC(e){if(!e||e.target===document.getElementById('tocModal'))document.getElementById('tocModal').classList.remove('open');}
+function goto(i){cur=i;ui();document.getElementById('tocModal').classList.remove('open');}
+let sx=0;
+document.getElementById('book').addEventListener('touchstart',e=>{sx=e.touches[0].clientX;});
+document.getElementById('book').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)nav(dx<0?1:-1);});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nav(1);if(e.key==='ArrowLeft')nav(-1);if(e.key===' '){e.preventDefault();flip();}});
+ui();
+</script>
+
+<!-- TTS v6 -->
+<div id="tts-bar" style="position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:rgba(10,20,10,0.97);border-top:2px solid #F4A01C;
+  padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.5);">
+  <button id="tts-play" onclick="ttsToggle()" style="background:#00A86B;color:#fff;border:none;
+    border-radius:6px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">▶ Read Aloud</button>
+  <button onclick="ttsStop()" style="background:#C62828;color:#fff;border:none;
+    border-radius:6px;padding:7px 10px;font-size:13px;font-weight:700;cursor:pointer;">■ Stop</button>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span style="font-size:11px;color:#A5D6A7;">Voice:</span>
+    <button id="btn-f" onclick="setG('female')" style="background:#6A0DAD;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;">👩 F</button>
+    <button id="btn-m" onclick="setG('male')" style="background:#1565C0;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;opacity:0.55;">👨 M</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:5px;">
+    <span style="font-size:11px;color:#A5D6A7;">Speed:</span>
+    <input type="range" id="tts-spd" min="0.6" max="1.6" step="0.1" value="0.95"
+      style="width:65px;accent-color:#00A86B;"
+      oninput="tR=parseFloat(this.value);document.getElementById('tts-rl').textContent=this.value"/>
+    <span id="tts-rl" style="font-size:11px;color:#A5D6A7;width:30px;">0.95</span>
+  </div>
+  <div id="tts-lbl" style="font-size:11px;color:#64748B;flex:1;text-align:right;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">Ready</div>
+</div>
+<div style="height:54px;"></div>
+
+<script>
+const PS={
+  "0":{"front":["The Civic Router. Internet for All.","A story of community, connectivity, digital rights, and the power of the internet when it reaches everyone.","Characters: Amina, a rural student. Tunde, a young community innovator. Mama Grace, community leader. Mr. Byte, technology guide. The Disconnect Monster, representing the digital divide.","Written by Gbemisola Esho. Google Developer Expert. WTM Ambassador. 2026."],"back":["About This Comic.","Connectivity is a Human Right, Not a Privilege.","The Civic Router tells the story of Amina, Tunde, Mama Grace, and their community — and how they fight the digital divide by building their own future.","Six chapters covering: digital exclusion, community networks, cybersecurity, digital democracy, internet governance, and the vision of Internet for All.","Inspired by real community network initiatives across Africa and the global internet governance community including ICANN, AFRALO, and civil society advocates."]},
+  "1":{"front":["Comic 1: The Village Without Internet.","Kogi Village, Nigeria. Five in the morning. Amina wakes before sunrise.","Amina says: I have to walk 8 kilometres again today just to get internet to submit my homework.","The Disconnect Monster roars: I AM THE DISCONNECT MONSTER! No internet for you! No education. No opportunity. No voice!","The Disconnect Monster feeds on exclusion. Every community without internet makes it stronger.","Mama Grace's business is trapped — not by lack of skill, but by lack of connection.","Tunde says: This isn't right. Other places have internet. Why not us? There HAS to be something we can do.","Connectivity is not a luxury. It is a necessity for education, health, business, and democracy."],"back":["Comic 1. The Village Without Internet.","Message: Connectivity is a necessity, not a luxury.","The digital divide is the gap between those who have reliable internet access and those who do not. It affects education, health, economic opportunity, and democratic participation.","Over 600 million Africans still lack internet access. Rural communities bear the heaviest burden.","The Disconnect Monster represents every barrier to connectivity: high cost, poor infrastructure, lack of local content, digital illiteracy, and exclusionary policies.","A student without internet access is not just inconvenienced — they are systematically excluded from 21st century education, opportunity, and participation."]},
+  "2":{"front":["Comic 2: Meet the Civic Router.","A glowing signal appears in the village square. Mr. Byte arrives.","Mr. Byte says: Hello everyone! I am Mr. Byte — your guide to the internet and what it can do for your community!","Amina asks: Are you a router? Like the ones that give WiFi?","Mr. Byte replies: Much more! I am a CIVIC router — I route not just data but knowledge, rights, and community power!","Mr. Byte introduces: Community Networks — build and own your own local internet infrastructure. Internet Governance — have a voice in how the internet is managed globally. Digital Inclusion — ensure no one is left behind. Digital Rights — privacy, freedom of expression, and access for all.","Tunde asks: Communities can solve connectivity challenges? WE can build this ourselves?","Mr. Byte replies: Yes! Around the world, communities like yours have done exactly that!"],"back":["Comic 2. Meet the Civic Router.","Message: Communities can solve connectivity challenges.","Community Networks are internet infrastructure built, owned, and operated by local communities. Examples include Rhizomatica in Mexico, Zenzeleni Networks in South Africa, and Tunapanda in Kenya.","Internet Governance is the system of policies, norms, and institutions that shape how the internet is managed. Bodies include ICANN, ITU, IGF, and regional organisations like AFRALO.","Digital Inclusion means ensuring that everyone — regardless of location, income, gender, age, or disability — can access and benefit from the internet.","Digital Rights include the right to access information, freedom of expression online, privacy, and the right to participate in digital governance decisions."]},
+  "3":{"front":["Comic 3: Building a Community Network.","The community gathers under the old mango tree. Mr. Byte projects a plan.","Mama Grace says: If we build this ourselves, WE own it. WE control it. No corporation can shut us off or overcharge us!","Step one: Plan Together. Community mapping — where does internet need to reach? School, clinic, market, homes.","Step two: Build Infrastructure. Towers, antennas, cables — local hands building local solutions with local materials.","Step three: Learn Digital Skills. Training community members to maintain, repair, and grow the network themselves.","Amina says: I learned to configure a router today! If this network grows, maybe I will be the one maintaining it!","Tunde says: And I am writing software to track the network health. This is OUR technology now!","Connected! Local ownership creates sustainable solutions."],"back":["Comic 3. Building a Community Network.","Message: Local ownership creates sustainable solutions.","Community networks prioritise accessibility over profit. They are governed by the communities they serve, with pricing set to be affordable for local income levels.","Zenzeleni Networks in Eastern Cape, South Africa, provides internet at 90% lower cost than commercial providers. Rhizomatica in Oaxaca, Mexico, connected 60 or more indigenous communities.","Community networks succeed when they train local technicians — creating employment, building capacity, and ensuring the network can be maintained without external dependency.","Community networks need supportive spectrum policies, simplified licensing frameworks, and government investment in backhaul connectivity to reach communities commercial operators ignore."]},
+  "4":{"front":["Comic 4: Internet for All.","Three months later. Kogi Village is transformed.","Amina says: I submitted my application to university this morning! From HOME! No more 8-kilometre walk!","Connectivity unlocked: Education — online classes, libraries, research. Healthcare — telemedicine and health information. Jobs and business — remote work and e-commerce. Government services — tax, ID, benefits, and licensing from home.","Mama Grace says: My shop now sells to customers in Lagos, Abuja, and London! My revenue tripled in one month!","The Disconnect Monster says: The Disconnect Monster shrinks. Every connected community weakens my power!","Message: Connectivity creates opportunity — for education, health, livelihoods, and participation."],"back":["Comic 4. Internet for All.","Message: Connectivity creates opportunity.","Students with reliable internet access have access to billions of web pages, 50 million or more online courses, and real-time global collaboration.","Telemedicine brings specialist care to rural communities without requiring patients to travel. Digital health information saves lives through early warning, prevention, and informed decisions.","A connected artisan, farmer, or small business owner can access global markets, digital payments, supply chains, and financial services that were previously unavailable.","Digital government reduces corruption through transparent processes, reduces cost by eliminating intermediaries, and increases access by removing the need to travel to distant offices."]},
+  "5":{"front":["Comic 5: Cybersecurity Matters.","A week after connection. Amina gets an unexpected message.","Suspicious SMS: URGENT — Your bank account has been suspended! Click here to verify. From a fake bank number.","Amina says: My account! I need to click this NOW before I lose everything!","Mr. Byte says: STOP, Amina! This is PHISHING. They are trying to steal your details by creating panic!","Three online threats: Phishing — fake messages pretending to be banks or trusted services to steal your information. Online Scams — you have won a prize, or send money to receive more. Misinformation — false news, fake health advice, and manipulated photos shared to deceive communities.","Mama Grace says: So we need internet safety training as much as we need the connection itself!","Safe connectivity matters. Internet access without digital literacy creates new vulnerabilities."],"back":["Comic 5. Cybersecurity Matters.","Message: Safe connectivity matters.","First-time internet users are disproportionately targeted because they lack experience recognising digital threats. Mobile money fraud, bank impersonation, and government impersonation are the most common vectors in Africa.","Online scams including advance fee scams, romance scams, fake job offers, and prize notifications cost African internet users billions annually.","False health information, electoral disinformation, and communal violence incitement through false news have caused real harm in connected communities across Africa.","Digital literacy must be taught alongside connectivity. Every community network should include training in online safety, critical thinking, and how to report digital threats."]},
+  "6":{"front":["Comic 6: Digital Democracy.","One month later. The community discovers something powerful beyond just having internet.","Tunde says: Mr. Byte, I found the government's budget document online. Did you know only 2% was allocated to our region?","Mr. Byte replies: Now you know! And knowledge is the first step to accountability.","Connected citizens can: Access public information — FOI requests, budget documents, government contracts. Participate in decisions — online consultations, e-petitions, public comment processes. Hold leaders accountable — track promises, report corruption, organise with other citizens.","Mama Grace says: We submitted a community petition online last week. The government responded within 48 hours. That NEVER happened before we had internet!","Connected citizens strengthen democracy. When every community has internet access, every voice can be heard.","The Civic Router: Internet for All. Written by Gbemisola Esho. 2026. AFRALO and ICANN At-Large."],"back":["Comic 6. Digital Democracy.","Message: Connected citizens strengthen democracy.","Internet access enables citizens to access government documents, budget data, policy decisions, and public records that were previously inaccessible — especially in rural areas.","Online public consultations, e-petitions, community feedback platforms, and social media advocacy give communities a voice in decisions that affect them.","Connected communities can track government promises, document corruption, organise collective action, and amplify local issues to national and international attention.","Forums like ICANN's At-Large community, the IGF, and regional bodies like AFRALO exist to ensure that communities most affected by internet policy have a voice in shaping it. Every connected citizen is a potential internet governance participant."]}
+};
+let tG='female',tR=0.95,tA=false;
+function lV(){window._tv=window.speechSynthesis.getVoices();}
+window.speechSynthesis.onvoiceschanged=lV;lV();
+function pV(g){
+  const vv=window._tv||[];
+  const fp=/female|woman|zira|samantha|victoria|karen|moira|fiona|tessa|google uk english female|google us english/i;
+  const mp=/male|man|daniel|alex|fred|ralph|thomas|google uk english male/i;
+  return vv.find(v=>(g==='female'?fp:mp).test(v.name+v.voiceURI))
+      ||vv.find(v=>v.lang&&v.lang.startsWith('en'))||vv[0]||null;
+}
+function setG(g){
+  tG=g;
+  document.getElementById('btn-f').style.opacity=g==='female'?'1':'0.55';
+  document.getElementById('btn-m').style.opacity=g==='male'?'1':'0.55';
+}
+function spk(arr,i,done){
+  if(!tA||i>=arr.length){if(done)done();return;}
+  const raw=arr[i].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,480);
+  if(!raw||raw.length<3){spk(arr,i+1,done);return;}
+  const u=new SpeechSynthesisUtterance(raw);
+  u.rate=tR;u.pitch=1;u.volume=1;
+  const v=pV(tG);if(v)u.voice=v;
+  document.getElementById('tts-lbl').textContent=raw.substring(0,55)+'...';
+  u.onend=()=>spk(arr,i+1,done);
+  u.onerror=()=>spk(arr,i+1,done);
+  window.speechSynthesis.speak(u);
+}
+function ttsReadPage(idx){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  tA=true;
+  document.getElementById('tts-play').textContent='⏸ Pause';
+  const d=PS[String(idx)]||{};
+  const front=d.front||[];
+  const back=d.back||[];
+  if(!front.length&&!back.length){
+    document.getElementById('tts-lbl').textContent='No text on this page';
+    tA=false;return;
+  }
+  spk(front,0,()=>{
+    if(!tA)return;
+    if(back.length){
+      const u=new SpeechSynthesisUtterance('Key lessons.');
+      u.rate=tR;const v=pV(tG);if(v)u.voice=v;
+      u.onend=()=>spk(back,0,()=>{
+        tA=false;
+        document.getElementById('tts-play').textContent='▶ Read Aloud';
+        document.getElementById('tts-lbl').textContent='Done.';
+      });
+      window.speechSynthesis.speak(u);
+    }else{
+      tA=false;
+      document.getElementById('tts-play').textContent='▶ Read Aloud';
+      document.getElementById('tts-lbl').textContent='Done.';
+    }
+  });
+}
+function ttsToggle(){
+  if(window.speechSynthesis.speaking&&!window.speechSynthesis.paused){
+    window.speechSynthesis.pause();
+    document.getElementById('tts-play').textContent='▶ Resume';
+    document.getElementById('tts-lbl').textContent='Paused';
+  }else if(window.speechSynthesis.paused){
+    window.speechSynthesis.resume();
+    document.getElementById('tts-play').textContent='⏸ Pause';
+  }else{
+    ttsReadPage(typeof cur!=='undefined'?cur:0);
+  }
+}
+function ttsStop(){
+  tA=false;window.speechSynthesis.cancel();
+  document.getElementById('tts-play').textContent='▶ Read Aloud';
+  document.getElementById('tts-lbl').textContent='Stopped';
+}
+(function(){
+  const _n=window.nav,_g=window.goto;
+  window.nav=function(d){ttsStop();if(_n)_n(d);setTimeout(()=>ttsReadPage(typeof cur!=='undefined'?cur:0),500);};
+  window.goto=function(i){ttsStop();if(_g)_g(i);setTimeout(()=>ttsReadPage(i),500);};
+})();
+window.addEventListener('load',()=>{lV();setTimeout(()=>ttsReadPage(0),1200);});
+</script>
+</body>
+</html>

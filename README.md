@@ -14,7 +14,7 @@
 
 **The Civic Router: Internet for All** is a 6-chapter interactive flippable comic about community networks, digital inclusion, internet governance, cybersecurity, and digital democracy. It follows Amina, Tunde, Mama Grace, Mr. Byte, and the Disconnect Monster through the story of a rural Nigerian community that fights the digital divide — and wins.
 
-Written by Gbemisola Esho, Google Developer Expert (GDE) and Women Techmakers (WTM) Ambassador. Produced in association with AFRALO / ICANN At-Large.
+Written by Gbemisola Esho, Google Developer Expert (GDE) and Women Techmakers (WTM) Ambassador. 
 
 ---
 

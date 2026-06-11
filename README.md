@@ -1,9 +1,6 @@
 # 🌍 THE CIVIC ROUTER: INTERNET FOR ALL
 ### Interactive Comic by Gbemisola Esho
 
-<p align="center">
-  <img src="afralo_logo.jpeg" alt="AFRALO ICANN At-Large" height="80"/>
-</p>
 
 <p align="center">
   <a href="https://apinke.github.io/civic-router/"><strong>▶ Read the Live Comic</strong></a> &nbsp;·&nbsp;
@@ -113,11 +110,11 @@ Licensed under [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) — free
 
 **Gbemisola Esho** is a Google Developer Expert (GDE), Women Techmakers (WTM) Ambassador, and founder of [Connectobridge](https://connectobridge.com). She specialises in Cybersecurity and Cloud Computing and is an active participant in the internet governance community.
 
-*Produced in association with AFRALO (African Regional At-Large Organisation) / ICANN At-Large.*
+
 
 ---
 
 <p align="center">
   <strong>🌍 Connecting Communities · Building Digital Democracy · Empowering Citizens 🌍</strong><br/><br/>
-  <img src="afralo_logo.jpeg" alt="AFRALO" height="50"/>
+  
 </p>
